@@ -22,9 +22,17 @@ class Tree:
         str = "\n"
 
         for child in tree.children:
-            str += f"{' ' * space_count}{child.name}{self.print_tree(child, space_count = space_count + 2)}"
+            str += f"{' ' * space_count}|_{child.name}{self.print_tree(child, space_count = space_count + 2)}"
 
         return str
+
+    def has_child(self, needle): # input can be a tree or it can be a name
+        if isinstance(needle, Tree):
+            return needle in self.children
+        for child in self.children:
+            if str(child.name) == needle:
+                return True
+        return False
     
     def __str__(self) -> str:
         return self.print_tree(self)
