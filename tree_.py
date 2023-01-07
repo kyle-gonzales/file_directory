@@ -11,8 +11,7 @@ class Tree:
         self.parent = parent
         self.children: list[Tree] = []
 
-    """
-    only searches within the root node's direct children
+    """only searches within the root node's direct children
     """
 
     def has_child(self, needle):

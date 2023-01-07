@@ -1,45 +1,38 @@
 from file_descriptor import File_Descriptor
 import re
+from dataclasses import dataclass, field
 
+""" Payload of Tree class. Template class for File_Node and Folder_Node
+"""
+@dataclass
 class Node:
-    def __init__(self, item, children) -> None:
-        self.item = item
-        self.children = children
+    item : any
 
     def __str__(self):
         return f"{self.item}"
 
-
+"""Payload of File_System. Specialization of Node. Wraps the File_Descriptor 
+"""
 class File_Node(Node):
-    def __init__(self, item: File_Descriptor) -> None:
-        super().__init__(item, None)
+    def __init__(self, item : File_Descriptor) -> None:
+        return super().__init__(item)
 
     def __repr__(self) -> str:
-        return f"{self.item.name}.{self.item.extension}"
+        return repr(self.item)
 
     def __str__(self) -> str:
-        return f"{self.item.name}.{self.item.extension}"
+        return str(self.item)
 
 
 class Folder_Node(Node):
-    def __init__(self, item: File_Descriptor, children: list[Node]) -> None:
-        super().__init__(item, children)
+    def __init__(self, item : File_Descriptor) -> None:
+        return super().__init__(item)
 
     def __repr__(self) -> str:
-        return f"{self.item.name}/"
+        return repr(self.item)
 
     def __str__(self) -> str:
-        return f"{self.item.name}/"
-
-def is_valid_file_name(file_name):
-    regex_file_name = r'^(.*?)(\.[^.]*)?$' 
+        return f"{self.item}/"
 
 
-"""
-regex for file name
-r'^.*\/(.*)\.?(.*)$'
 
-file paths and file name
-r'((?:[^/]*/)*)(.*)'
-https://www.programiz.com/python-programming/examples/file-name-from-file-path
-"""

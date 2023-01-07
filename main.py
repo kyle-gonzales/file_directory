@@ -1,9 +1,10 @@
 from tree_ import Tree
-from node_ import File_Node
-from file_descriptor import File_Descriptor
-
+from node_ import File_Node, Folder_Node
+from file_descriptor import File_Descriptor, parse_file_name
+from file_system import File_System
 
 def main():
+    """ #!Testing the tree
     t = Tree("root")
     t.insert_child("one")
     two = t.insert_child("two")
@@ -22,14 +23,26 @@ def main():
     two_new = t.delete_child(two)
 
     print(t)
+    f = File_Descriptor("ts")
 
-    fi = Tree(File_Node(File_Descriptor("test", "txt")))
-    t.append_child(fi)
+    print(f)
+    print(repr(f))
+
+    folder = Folder_Node(f)
+    print(folder)
+    print(repr(folder))
+
+    f_tree = Tree(folder)
+    t.append_child(f_tree)
     t.append_child(two_new)
 
     print(t)
 
     print(t.find_descendant_by_name("two"))
+    """
+
+    fs = File_System()
+    fs.start()
 
 
 if __name__ == "__main__":
