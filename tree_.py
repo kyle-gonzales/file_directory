@@ -23,7 +23,7 @@ class Tree:
                 return True
         return False
 
-    def insert_child(self, name: str):  # deprecated
+    def insert_child(self, name: Node):  # deprecated
         child = Tree(name, self)
 
         self.children.append(child)
@@ -76,7 +76,7 @@ class Tree:
 
     def find_descendant_by_name(self, name):
         for child in self.children:
-            if child.name == name:
+            if child.name.item == name:
                 return child
             child.find_descendant_by_name(name)
         return None

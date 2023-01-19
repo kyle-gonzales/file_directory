@@ -1,17 +1,18 @@
 from tree_ import Tree
-from node_ import File_Node, Folder_Node
+from node_ import File_Node, Folder_Node, Node
 from file_descriptor import File_Descriptor, parse_file_name
 from file_system import File_System
 
 def main():
-    """ #!Testing the tree
+    """
+    #!Testing the tree
     t = Tree("root")
-    t.insert_child("one")
-    two = t.insert_child("two")
-    two.insert_child("two-1").insert_child("two-1-1")
+    t.insert_child(Node("one"))
+    two = t.insert_child(Node("two"))
+    two.insert_child("two-1").insert_child(Node("two-1-1"))
     two_2 = two.insert_child("two-2")
     two.insert_child("two-3")
-    t.insert_child("three").parent.insert_child("four")
+    t.insert_child(Node("three")).parent.insert_child(Node("four"))
 
     print(t)
 

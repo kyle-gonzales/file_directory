@@ -15,7 +15,7 @@ class File_System:
         while run:
             print()
             you = "You@YourPC"
-            inp = input(f"{you} {self.pwd}\n$ ")
+            inp = input(f"{you} {self.pwd}\n$ ") # TODO: format self.pwd from list to string
 
             cmd, files = self.parse_input(inp)
 
@@ -25,11 +25,13 @@ class File_System:
             if cmd == "mkdir":
                 try:
                     if len(files) != 1:
-                        raise ValueError()
+                        raise SyntaxError()
                     else:
                         self.create_dir(files[0])
-                except ValueError as e:
+                except SyntaxError as e:
                     print("usage: mkdir <directory name>")
+                except ValueError as e:
+                    print(f"mkdir: cannot create directory {files[0]}")
                 finally:
                     continue
             else:
@@ -38,9 +40,32 @@ class File_System:
 
     """ create a new directory
     """
-    def create_dir(self, folder : Tree): # TODO handle absolute paths and relative paths
-        child =  Tree(Folder_Node(folder))
-        self.file_system.append_child(child)
+    def create_dir(self, folder : str): # TODO handle absolute paths and relative paths
+        # TODO : will not work for file paths ending in "/"
+        if folder[0:5] == "/root":  # absolute path
+            current = self.file_system
+            folder_list = folder.split("/") 
+            new_folder = folder_list[-1]
+            current = self.traverse_node_list(folder_list[2:-1])
+            current.append_child(Tree(Folder_Node(new_folder)))
+            print(self.file_system)
+
+        elif "/" in folder and folder[0] != '/': # relative path
+            head = self.traverse_node_list(self.pwd[1:])
+
+            folder_list = folder.split("/") 
+            new_folder = folder_list[-1]
+
+            current = self.traverse_node_list(folder_list[:-1], head)
+
+            current.append_child(Tree(Folder_Node(new_folder)))
+            # print("relative path")
+            print(self.file_system)
+            
+        else: # add folder in pwd
+            child =  Tree(Folder_Node(folder))
+            self.file_system.append_child(child)
+            print(self.file_system)
 
     def delete_dir(self):
         pass
@@ -89,6 +114,18 @@ class File_System:
         files = inp_list[1:]
 
         return (cmd, files)
+
+    def traverse_node_list(self, node_list, head : Tree = None):
+        if not head:
+            head = self.file_system
+        current = head
+        for f in node_list:
+            current = current.find_descendant_by_name(f)
+            if not current:
+                raise ValueError
+        
+        return current
+
 
     def get_absolute_path(self):
         pass
