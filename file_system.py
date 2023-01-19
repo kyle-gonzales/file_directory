@@ -8,6 +8,7 @@ class File_System:
     def __init__(self) -> None:
         self.file_system = Tree(Folder_Node("root"))
         self.pwd = ["root"]
+        self.current_node = self.file_system
 
     def start(self):
         run = True
@@ -34,20 +35,32 @@ class File_System:
                     print(f"mkdir: cannot create directory {files[0]}")
                 finally:
                     continue
+            elif cmd == "rmdir":
+                try:
+                    if len(files) != 1:
+                        raise SyntaxError
+                    else:
+                        self.delete_dir(files[0])
+                except SyntaxError as e:
+                    print("usage: rmdir <directory name>")
+                except ValueError as e:
+                    print(f"rmdir: failed to remove {files[0]}: No such file or directory")
+                finally:
+                    continue
             else:
                 print(f"{inp}: command not found")
                 continue
 
     """ create a new directory
     """
-    def create_dir(self, folder : str): # TODO handle absolute paths and relative paths
+    def create_dir(self, folder : str):
         # TODO : will not work for file paths ending in "/"
         if folder[0:5] == "/root":  # absolute path
-            current = self.file_system
+            curr = self.file_system
             folder_list = folder.split("/") 
             new_folder = folder_list[-1]
-            current = self.traverse_node_list(folder_list[2:-1])
-            current.append_child(Tree(Folder_Node(new_folder)))
+            curr = self.traverse_node_list(folder_list[2:-1])
+            curr.append_child(Tree(Folder_Node(new_folder)))
             print(self.file_system)
 
         elif "/" in folder and folder[0] != '/': # relative path
@@ -56,19 +69,43 @@ class File_System:
             folder_list = folder.split("/") 
             new_folder = folder_list[-1]
 
-            current = self.traverse_node_list(folder_list[:-1], head)
+            curr = self.traverse_node_list(folder_list[:-1], head)
 
-            current.append_child(Tree(Folder_Node(new_folder)))
+            curr.append_child(Tree(Folder_Node(new_folder)))
             # print("relative path")
             print(self.file_system)
             
         else: # add folder in pwd
             child =  Tree(Folder_Node(folder))
-            self.file_system.append_child(child)
+            self.current_node.append_child(child)
             print(self.file_system)
 
-    def delete_dir(self):
-        pass
+    def delete_dir(self, folder : str):
+        if folder[0:5] == "/root":  # absolute path
+            curr = self.file_system
+            folder_list = folder.split("/") 
+            curr = self.traverse_node_list(folder_list[2:])
+
+            curr.parent.delete_child(curr.name.item)
+            # print("relative path")
+            print(self.file_system)
+
+        elif "/" in folder and folder[0] != '/': # relative path
+            head = self.traverse_node_list(self.pwd[1:]) # ! refactor to self.current
+
+            folder_list = folder.split("/") 
+
+            curr = self.traverse_node_list(folder_list, head)
+            curr.parent.delete_child(curr.name.item)
+            # print("relative path")
+            print(self.file_system)
+            
+        else: # delete folder in pwd
+            if self.current_node.has_child(folder):
+                self.current_node.delete_child(folder)
+            else:
+                raise ValueError
+            print(self.file_system)
 
     def navigate_(self):
         pass
@@ -120,12 +157,20 @@ class File_System:
             head = self.file_system
         current = head
         for f in node_list:
-            current = current.find_descendant_by_name(f)
+            if f == "..":
+                current = self.get_parent(current)
+            else:
+                current = current.find_descendant_by_name(f)
+            
             if not current:
                 raise ValueError
         
         return current
 
+    def get_parent(self, current : Tree):
+        if not current.parent:
+            raise ValueError
+        return current.parent
 
     def get_absolute_path(self):
         pass

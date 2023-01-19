@@ -4,8 +4,7 @@ from file_descriptor import File_Descriptor, parse_file_name
 from file_system import File_System
 
 def main():
-    """
-    #!Testing the tree
+    """#!Testing the tree
     t = Tree("root")
     t.insert_child(Node("one"))
     two = t.insert_child(Node("two"))

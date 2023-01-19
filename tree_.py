@@ -15,11 +15,11 @@ class Tree:
     """
 
     def has_child(self, needle):
-        # input can be a tree or it can be a name
+        # input can be a tree or string
         if isinstance(needle, Tree):
             return needle in self.children
         for child in self.children:
-            if str(child.name) == needle:
+            if child.name.item == needle:
                 return True
         return False
 
@@ -38,7 +38,7 @@ class Tree:
             removedNode = self.children.pop(self.children.index(needle))
         else:
             for child in self.children:
-                if str(child.name) == needle:
+                if child.name.item == needle:
                     removedNode = self.children.pop(self.children.index(child))
 
         if removedNode:
