@@ -49,7 +49,7 @@ class File_System:
                     )
             elif cmd == "cd":
                 try:
-                    if len(files) != 1:
+                    if len(files) > 1:
                         raise SyntaxError
                     else:
                         self.navigate_(files[0])
@@ -61,12 +61,12 @@ class File_System:
                     )
             elif cmd == "ls":
                 try:
-                    if len(files) != 0:
+                    if len(files) != 1:
                         raise SyntaxError
                     else:
                         self.display_(files[0] if len(files) else None)
                 except SyntaxError as e:
-                    print("usage: ls")
+                    print("usage: ls <directory name>")
                 except ValueError as e:
                     print(f"ls: error {files[0]}")
             elif cmd == "fs":
@@ -89,7 +89,7 @@ class File_System:
             # print(self.file_system)
 
         elif "/" in folder and folder[0] != "/":  # relative path
-            head = self.traverse_node_list(self.abs_path[1:])
+            head = self.pwd
 
             folder_list = folder.split("/")
             new_folder = folder_list[-1]
@@ -116,9 +116,7 @@ class File_System:
             # print(self.file_system)
 
         elif "/" in folder and folder[0] != "/":  # relative path
-            head = self.traverse_node_list(
-                self.abs_path[1:]
-            )  # ! refactor to self.current
+            head = self.pwd
 
             folder_list = folder.split("/")
 
@@ -203,15 +201,17 @@ class File_System:
         target = self.pwd.children
         if bool(folder):
             if folder == "/":
-                pass
+                target = self.file_system.children
             elif folder == "..":
-                pass
+                target = self.pwd.parent.children
             elif folder[0:5] == "/root":
-                pass
+                folder_list = folder.split("/")
+                target = self.traverse_node_list(folder_list[2:]).children
             elif "/" in folder:
-                pass
+                folder_list = folder.split("/")
+                target = self.traverse_node_list(folder_list, self.pwd).children
             else:
-                pass
+                target = self.traverse_node_list([folder], self.pwd).children
 
         for f in target:
             print(f.name.item)  # f.name prints folder_name/
