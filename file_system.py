@@ -49,7 +49,7 @@ class File_System:
                     )
             elif cmd == "cd":
                 try:
-                    if len(files) > 1:
+                    if len(files) != 1:
                         raise SyntaxError
                     else:
                         self.navigate_(files[0])
@@ -57,11 +57,11 @@ class File_System:
                     print("usage: cd <directory name>")
                 except ValueError as e:
                     print(
-                        f"cd: failed to change directory to {files[0]}: No such folder"
+                        f"cd: failed to change directory to {files[0]}: No such file or directory"
                     )
             elif cmd == "ls":
                 try:
-                    if len(files) != 1:
+                    if len(files) > 1:
                         raise SyntaxError
                     else:
                         self.display_(files[0] if len(files) else None)
@@ -85,7 +85,10 @@ class File_System:
             folder_list = folder.split("/")
             new_folder = folder_list[-1]
             curr = self.traverse_node_list(folder_list[2:-1])
-            curr.append_child(Tree(Folder_Node(new_folder)))
+
+            self.valid_append(new_folder, curr)
+
+
             # print(self.file_system)
 
         elif "/" in folder and folder[0] != "/":  # relative path
@@ -96,14 +99,26 @@ class File_System:
 
             curr = self.traverse_node_list(folder_list[:-1], head)
 
-            curr.append_child(Tree(Folder_Node(new_folder)))
+            self.valid_append(new_folder, curr)
             # print("relative path")
             # print(self.file_system)
 
         else:  # add folder in pwd
-            child = Tree(Folder_Node(folder))
-            self.pwd.append_child(child)
+            self.valid_append(folder, self.pwd)
+
             # print(self.file_system)
+    
+    def valid_append(self, new_folder, curr):
+            try:
+                if not curr.has_child(new_folder):
+                    curr.append_child(Tree(Folder_Node(new_folder)))
+                else:
+                    raise NameError
+            except NameError:
+                print(f"mkdir: {new_folder}: Already exists")
+            finally:
+                return
+
 
     def delete_dir(self, folder: str):
         if folder[0:5] == "/root":  # absolute path
