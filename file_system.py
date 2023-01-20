@@ -236,9 +236,9 @@ class File_System:
 
         cmd = inp_list[0]
         files = inp_list[1:]
-        for index, f in enumerate(files):
-            files[index] = f.replace(".", "\.")
-            files[index] = f.replace("*", ".*")
+        # for index, f in enumerate(files):
+        #     files[index] = f.replace(".", "\.")
+        #     files[index] = f.replace("*", ".*")
 
         return (cmd, files)
 

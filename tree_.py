@@ -75,10 +75,10 @@ class Tree:
     """
 
     def find_descendant_by_name(self, name):
-        regex = re.compile(name)
+        # regex = re.compile(name)
         for child in self.children:
-            match_ = regex.fullmatch(child.name.item)
-            if match_:
+            # match_ = regex.fullmatch(child.name.item)
+            if child.name.item == name:
                 return child
             child.find_descendant_by_name(name)
         return None
@@ -88,7 +88,7 @@ class Tree:
         regex = re.compile(name)
         for child in self.children:
             match_ = regex.fullmatch(child.name.item)
-            if match_:
+            if child.name.item == name:
                 children.append(child)
             child.find_all_descendants_by_name(name)
         return children
