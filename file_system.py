@@ -200,6 +200,7 @@ class File_System:
         pass
 
     def display_(self, folder: None | str):
+        target = self.pwd.children
         if bool(folder):
             if folder == "/":
                 pass
@@ -212,7 +213,7 @@ class File_System:
             else:
                 pass
 
-        for f in self.pwd.children:
+        for f in target:
             print(f.name.item)  # f.name prints folder_name/
 
     def show_contents(self, file):
