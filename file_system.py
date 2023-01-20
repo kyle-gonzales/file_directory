@@ -212,6 +212,7 @@ class File_System:
                 target = self.traverse_node_list(folder_list, self.pwd).children
             else:
                 target = self.traverse_node_list([folder], self.pwd).children
+                # TODO : support regex here using find_all_descendants_by_name
 
         for f in target:
             print(f.name.item)  # f.name prints folder_name/
@@ -234,6 +235,7 @@ class File_System:
         for index, f in enumerate(files):
             files[index] = f.replace(".", "\.")
             files[index] = f.replace("*", ".*")
+            files[index] = f.replace("?", ".")
 
         return (cmd, files)
 
@@ -244,6 +246,8 @@ class File_System:
         pwd += self.abs_path[-1]
         return pwd
 
+    """ given a starting node, go to the furthest node of the path
+    """
     def traverse_node_list(self, node_list, head: Tree = None):
         if not head:
             head = self.file_system
@@ -258,6 +262,7 @@ class File_System:
                 raise ValueError
 
         return current
+    
 
     def get_parent(self, current: Tree):
         if not current.parent:

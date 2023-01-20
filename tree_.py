@@ -93,8 +93,7 @@ class Tree:
             child.find_all_descendants_by_name(name)
         return children
 
-    # deprecated
-    def __traverse(self, fun):  # input is a lambda
+    def __traverse(self, fun):  # input is a lambda #! deprecated
         for child in self.children:
             if fun(child):
                 return fun(child)

@@ -1,11 +1,13 @@
 import re
 
-regex = '*.*'
+
+regex = 'abc0?.ts'
 regex = regex.replace(".", "\.")
 regex = regex.replace("*", ".*")
+regex = regex.replace("?", ".")
 print(regex)
 
 r = re.compile(regex)
 
-res = r.fullmatch("hello.hello.hello")
-print(res.group(0) if res else "")
+res = r.fullmatch("abc01.ts")
+print(res.group(0) if res else "does not match")
