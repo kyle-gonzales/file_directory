@@ -35,8 +35,6 @@ class File_System:
                     print("usage: mkdir <directory name>")
                 except ValueError as e:
                     print(f"mkdir: cannot create directory {files[0]}")
-                finally:
-                    continue
             elif cmd == "rmdir":
                 try:
                     if len(files) != 1:
@@ -49,8 +47,6 @@ class File_System:
                     print(
                         f"rmdir: failed to remove {files[0]}: No such file or directory"
                     )
-                finally:
-                    continue
             elif cmd == "cd":
                 try:
                     if len(files) != 1:
@@ -63,8 +59,6 @@ class File_System:
                     print(
                         f"cd: failed to change directory to {files[0]}: No such folder"
                     )
-                finally:
-                    continue
             elif cmd == "ls":
                 try:
                     if len(files) != 0:
@@ -73,8 +67,8 @@ class File_System:
                         self.display_(files[0] if len(files) else None)
                 except SyntaxError as e:
                     print("usage: ls")
-                finally:
-                    continue
+                except ValueError as e:
+                    print(f"ls: error {files[0]}")
             elif cmd == "fs":
                 print(self.file_system)
             else:
@@ -156,9 +150,9 @@ class File_System:
                     pwd_temp = self.get_parent(pwd_temp)
                 else:
                     pwd_temp = pwd_temp.find_descendant_by_name(f)
-                new_path_temp.append(pwd_temp.name.item)
                 if not pwd_temp:
                     raise ValueError
+                new_path_temp.append(pwd_temp.name.item)
             self.pwd = pwd_temp
             self.abs_path = new_path_temp[:]
 
@@ -172,9 +166,9 @@ class File_System:
                     pwd_temp = self.get_parent(pwd_temp)
                 else:
                     pwd_temp = pwd_temp.find_descendant_by_name(f)
-                new_path_temp.append(pwd_temp.name.item)
                 if not pwd_temp:
                     raise ValueError
+                new_path_temp.append(pwd_temp.name.item)
             self.pwd = pwd_temp
             self.abs_path = new_path_temp[:]
         else:
