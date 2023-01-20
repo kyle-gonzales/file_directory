@@ -7,8 +7,8 @@ import re
 class File_System:
     def __init__(self) -> None:
         self.file_system = Tree(Folder_Node("root"))
-        self.pwd = ["root"]
-        self.current_node = self.file_system
+        self.abs_path = ["root"]
+        self.pwd = self.file_system
 
     def start(self):
         run = True
@@ -16,7 +16,9 @@ class File_System:
         while run:
             print()
             you = "You@YourPC"
-            inp = input(f"{you} {self.pwd}\n$ ") # TODO: format self.pwd from list to string
+            inp = input(
+                f"{you} {self.print_pwd()}\n$ "
+            )  # TODO: format self.abs_path from list to string
 
             cmd, files = self.parse_input(inp)
 
@@ -44,71 +46,143 @@ class File_System:
                 except SyntaxError as e:
                     print("usage: rmdir <directory name>")
                 except ValueError as e:
-                    print(f"rmdir: failed to remove {files[0]}: No such file or directory")
+                    print(
+                        f"rmdir: failed to remove {files[0]}: No such file or directory"
+                    )
                 finally:
                     continue
+            elif cmd == "cd":
+                try:
+                    if len(files) != 1:
+                        raise SyntaxError
+                    else:
+                        self.navigate_(files[0])
+                except SyntaxError as e:
+                    print("usage: cd <directory name>")
+                except ValueError as e:
+                    print(
+                        f"cd: failed to change directory to {files[0]}: No such folder"
+                    )
+                finally:
+                    continue
+            elif cmd == "ls":
+                try:
+                    if len(files) != 0:
+                        raise SyntaxError
+                    else:
+                        self.display_(files[0] if len(files) else None)
+                except SyntaxError as e:
+                    print("usage: ls")
+                finally:
+                    continue
+            elif cmd == "fs":
+                print(self.file_system)
             else:
                 print(f"{inp}: command not found")
                 continue
 
     """ create a new directory
     """
-    def create_dir(self, folder : str):
+
+    def create_dir(self, folder: str):
         # TODO : will not work for file paths ending in "/"
         if folder[0:5] == "/root":  # absolute path
             curr = self.file_system
-            folder_list = folder.split("/") 
+            folder_list = folder.split("/")
             new_folder = folder_list[-1]
             curr = self.traverse_node_list(folder_list[2:-1])
             curr.append_child(Tree(Folder_Node(new_folder)))
-            print(self.file_system)
+            # print(self.file_system)
 
-        elif "/" in folder and folder[0] != '/': # relative path
-            head = self.traverse_node_list(self.pwd[1:])
+        elif "/" in folder and folder[0] != "/":  # relative path
+            head = self.traverse_node_list(self.abs_path[1:])
 
-            folder_list = folder.split("/") 
+            folder_list = folder.split("/")
             new_folder = folder_list[-1]
 
             curr = self.traverse_node_list(folder_list[:-1], head)
 
             curr.append_child(Tree(Folder_Node(new_folder)))
             # print("relative path")
-            print(self.file_system)
-            
-        else: # add folder in pwd
-            child =  Tree(Folder_Node(folder))
-            self.current_node.append_child(child)
-            print(self.file_system)
+            # print(self.file_system)
 
-    def delete_dir(self, folder : str):
+        else:  # add folder in pwd
+            child = Tree(Folder_Node(folder))
+            self.pwd.append_child(child)
+            # print(self.file_system)
+
+    def delete_dir(self, folder: str):
         if folder[0:5] == "/root":  # absolute path
             curr = self.file_system
-            folder_list = folder.split("/") 
+            folder_list = folder.split("/")
             curr = self.traverse_node_list(folder_list[2:])
 
             curr.parent.delete_child(curr.name.item)
             # print("relative path")
-            print(self.file_system)
+            # print(self.file_system)
 
-        elif "/" in folder and folder[0] != '/': # relative path
-            head = self.traverse_node_list(self.pwd[1:]) # ! refactor to self.current
+        elif "/" in folder and folder[0] != "/":  # relative path
+            head = self.traverse_node_list(
+                self.abs_path[1:]
+            )  # ! refactor to self.current
 
-            folder_list = folder.split("/") 
+            folder_list = folder.split("/")
 
             curr = self.traverse_node_list(folder_list, head)
             curr.parent.delete_child(curr.name.item)
             # print("relative path")
-            print(self.file_system)
-            
-        else: # delete folder in pwd
-            if self.current_node.has_child(folder):
-                self.current_node.delete_child(folder)
+            # print(self.file_system)
+
+        else:  # delete folder in pwd
+            if self.pwd.has_child(folder):
+                self.pwd.delete_child(folder)
             else:
                 raise ValueError
-            print(self.file_system)
+            # print(self.file_system)
 
-    def navigate_(self):
-        pass
+    def navigate_(self, folder: str):  # TODO : update self.pwd and self.abs_path
+        if folder == "..":
+            self.pwd = self.get_parent(self.pwd)
+            self.abs_path.pop()
+        elif folder == "/":
+            self.pwd = self.file_system
+            self.abs_path = ["root"]
+        elif folder[0:5] == "/root":
+            folder_list = folder.split("/")
+            pwd_temp = self.file_system
+            new_path_temp = ["root"]
+            for f in folder_list[2:]:
+                if f == "..":
+                    pwd_temp = self.get_parent(pwd_temp)
+                else:
+                    pwd_temp = pwd_temp.find_descendant_by_name(f)
+                new_path_temp.append(pwd_temp.name.item)
+                if not pwd_temp:
+                    raise ValueError
+            self.pwd = pwd_temp
+            self.abs_path = new_path_temp[:]
+
+        elif "/" in folder and folder[0] != "/":
+            folder_list = folder.split("/")
+            pwd_temp = self.traverse_node_list(self.abs_path[1:])
+            new_path_temp = self.abs_path[:]
+
+            for f in folder_list:
+                if f == "..":
+                    pwd_temp = self.get_parent(pwd_temp)
+                else:
+                    pwd_temp = pwd_temp.find_descendant_by_name(f)
+                new_path_temp.append(pwd_temp.name.item)
+                if not pwd_temp:
+                    raise ValueError
+            self.pwd = pwd_temp
+            self.abs_path = new_path_temp[:]
+        else:
+            if not self.pwd.has_child(folder):
+                raise ValueError
+            else:
+                self.pwd = self.pwd.find_descendant_by_name(folder)
+                self.abs_path.append(folder)
 
     def create_file(self):
         pass
@@ -131,8 +205,21 @@ class File_System:
     def copy_(self):
         pass
 
-    def display_(self):
-        pass
+    def display_(self, folder: None | str):
+        if bool(folder):
+            if folder == "/":
+                pass
+            elif folder == "..":
+                pass
+            elif folder[0:5] == "/root":
+                pass
+            elif "/" in folder:
+                pass
+            else:
+                pass
+
+        for f in self.pwd.children:
+            print(f.name.item)  # f.name prints folder_name/
 
     def show_contents(self, file):
         pass
@@ -144,15 +231,25 @@ class File_System:
     helper functions
     """
 
-    def parse_input(self, inp : str):
+    def parse_input(self, inp: str):
         inp_list = inp.split()
-        
+
         cmd = inp_list[0]
         files = inp_list[1:]
+        for index, f in enumerate(files):
+            files[index] = f.replace(".", "\.")
+            files[index] = f.replace("*", ".*")
 
         return (cmd, files)
 
-    def traverse_node_list(self, node_list, head : Tree = None):
+    def print_pwd(self):
+        pwd = "/"
+        for dir in self.abs_path[:-1]:
+            pwd += dir + "/"
+        pwd += self.abs_path[-1]
+        return pwd
+
+    def traverse_node_list(self, node_list, head: Tree = None):
         if not head:
             head = self.file_system
         current = head
@@ -161,13 +258,13 @@ class File_System:
                 current = self.get_parent(current)
             else:
                 current = current.find_descendant_by_name(f)
-            
+
             if not current:
                 raise ValueError
-        
+
         return current
 
-    def get_parent(self, current : Tree):
+    def get_parent(self, current: Tree):
         if not current.parent:
             raise ValueError
         return current.parent

@@ -1,5 +1,5 @@
 from node_ import *
-
+import re
 
 class Tree:
     def __init__(self, name: Node, parent: "Tree" = None) -> None:
@@ -75,16 +75,20 @@ class Tree:
     """
 
     def find_descendant_by_name(self, name):
+        regex = re.compile(name)
         for child in self.children:
-            if child.name.item == name:
+            match_ = regex.fullmatch(child.name.item)
+            if match_:
                 return child
             child.find_descendant_by_name(name)
         return None
 
-    def find_all_descendants_by_name(self, name):
+    def find_all_descendants_by_name(self, name): # TODO: support regex
         children = []
+        regex = re.compile(name)
         for child in self.children:
-            if child.name == name:
+            match_ = regex.fullmatch(child.name.item)
+            if match_:
                 children.append(child)
             child.find_all_descendants_by_name(name)
         return children
