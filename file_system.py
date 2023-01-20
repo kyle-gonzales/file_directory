@@ -10,6 +10,8 @@ class File_System:
         self.abs_path = ["root"]
         self.pwd = self.file_system
 
+        self.isUniversal = False
+
     def start(self):
         run = True
 
@@ -49,7 +51,7 @@ class File_System:
                     )
             elif cmd == "cd":
                 try:
-                    if len(files) > 1:
+                    if len(files) != 1:
                         raise SyntaxError
                     else:
                         self.navigate_(files[0])
@@ -61,7 +63,7 @@ class File_System:
                     )
             elif cmd == "ls":
                 try:
-                    if len(files) != 1:
+                    if len(files) > 1:
                         raise SyntaxError
                     else:
                         self.display_(files[0] if len(files) else None)
