@@ -103,7 +103,15 @@ class File_System:
                 except ValueError as e:
                     print(f">: failed to append to file {files[0]}")
             elif cmd == "rm":
-                pass
+                try:
+                    if len(files) != 1:
+                        raise SyntaxError
+                    else:
+                        self.delete_dir(files[0])
+                except SyntaxError as e:
+                    print("usage: rm <file path>")
+                except ValueError as e:
+                    print(f"rm: failed to remove {files[0]}: No such file")
             elif cmd == "edit":
                 try:
                     if len(files) != 1:
@@ -115,9 +123,25 @@ class File_System:
                 except ValueError as e:
                     print(f"edit : failed to edit file {files[0]}")
             elif cmd == "rn":
-                pass
+                try:
+                    if len(files) != 2:
+                        raise SyntaxError
+                    else:
+                        self.rename_file(files[0], files[1])
+                except SyntaxError as e:
+                    print("usage: rn <filename> <new filename>")
+                except ValueError as e:
+                    print(f"rn: failed to rename {files[0]} to {files[1]}")
             elif cmd == "mv":
-                pass
+                try:
+                    if len(files) != 2:
+                        raise SyntaxError
+                    else:
+                        self.move_file(files[0], files[1])
+                except SyntaxError as e:
+                    print("usage: mv file_name target_file/target_directory")
+                except ValueError as e:
+                    print(f"mv: failed to move {files[0]} to {files[1]}")
             elif cmd == "show":
                 try:
                     if len(files) != 1:
@@ -180,7 +204,6 @@ class File_System:
             curr = self.traverse_node_list(folder_list[2:])
 
             curr.parent.delete_child(curr.name.item)
-
 
         elif "/" in folder and folder[0] != "/":  # relative path
             folder_list = folder.split("/")
@@ -289,27 +312,65 @@ int main(){
     def edit_file(
         self, file_name
     ):  # appends to the file; does not show contents of file
-        with open(file_name, "a") as f:
-            t = "//this is a test for the append using >>\n"
-            f.write(t)
+        if self.pwd.has_child(file_name):
+            with open(file_name, "a") as f:
+                t = "//this is a test for the append using >>\n"
+                f.write(t)
+        else:
+            raise FileNotFoundError
 
-    def edit_(self, file_name):
+    def edit_(self, file_path):
         # if does not exist, create file. If file exists, show the contents of the file and allow the file to be appended with additional texts
-        with open(file_name, "a") as f:
-            t = "//this is the result of editing the file using edit\n"
-            f.write(t)
 
-    def delete_file(self):
-        pass
+        if file_path[0:5] == "/root":  # absolute path
+            folder_list = file_path.split("/")
+            file_node = self.traverse_node_list(folder_list[2:])
+
+        elif "/" in file_path and file_path[0] != "/":  # relative path
+            folder_list = file_path.split("/")
+            file_node = self.traverse_node_list(folder_list, self.pwd)
+
+        else:  # add folder in pwd
+            file_name = file_path
+            if self.pwd.has_child(file_name):
+                file_node = self.pwd.find_descendant_by_name(file_name)
+
+        try:
+            file_name = file_node.name.item
+            with open(file_name, "a") as f:
+                t = "//this is the result of editing the file using edit\n"
+                f.write(t)
+        except Exception:
+            raise FileNotFoundError
 
     def rename_file(self, path, new_name):
-        pass
+        if self.pwd.has_child(path):
+            file_node = self.pwd.find_descendant_by_name(path)
+            file_node.name.item = new_name
 
     """Moves a file from one directory to another. If the target directory is non-existent. It RENAMES the current directory to the new name
     """
 
-    def move_file(self, file, path):
-        pass
+    def move_file(self, file_, path_):
+        file = None
+
+        if self.pwd.has_child(file_):
+            file = self.pwd.delete_child(file_)
+        else:
+            raise ValueError
+
+        if path_[0:5] == "/root":
+            path_list = path_.split("/")
+            path = self.traverse_node_list(path_list[2:])
+            path.append_child(file)
+        elif "/" in path_ and path_[0] != "/":
+            path_list = path_.split("/")
+            path = self.traverse_node_list(path_list, self.pwd)
+            path.append_child(file)
+        else:
+            if self.pwd.has_child(path_):
+                path = self.pwd.find_descendant_by_name(path_)
+                path.append_child(file)
 
     def copy_(self, file_, copy_):
         file = None
