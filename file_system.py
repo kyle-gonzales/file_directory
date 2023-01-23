@@ -4,6 +4,7 @@ from node_ import File_Node, Folder_Node
 import re
 import copy as deepcopy
 
+
 class File_System:
     def __init__(self) -> None:
         self.file_system = Tree(Folder_Node("root"))
@@ -76,25 +77,59 @@ class File_System:
                     else:
                         self.copy_(files[0], files[1])
                 except SyntaxError as e:
-                    print("usage: cp source_file/source_directory target_file/target_directory")
-                except ValueError as e:
                     print(
-                        f"cp: failed to move {files[0]} to {files[1]}"
+                        "usage: cp source_file/source_directory target_file/target_directory"
                     )
+                except ValueError as e:
+                    print(f"cp: failed to move {files[0]} to {files[1]}")
             elif cmd == ">":
-                pass
+                try:
+                    if len(files) != 1:
+                        raise SyntaxError
+                    else:
+                        self.create_file(files[0])
+                except SyntaxError as e:
+                    print("usage: '>' <file_name>")
+                except ValueError as e:
+                    print(f">: failed to write to file {files[0]}")
             elif cmd == ">>":
-                pass
+                try:
+                    if len(files) != 1:
+                        raise SyntaxError
+                    else:
+                        self.edit_file(files[0])
+                except SyntaxError as e:
+                    print("usage: '>>' <file_name>")
+                except ValueError as e:
+                    print(f">: failed to append to file {files[0]}")
             elif cmd == "rm":
                 pass
             elif cmd == "edit":
-                pass
+                try:
+                    if len(files) != 1:
+                        raise SyntaxError
+                    else:
+                        self.edit_(files[0])
+                except SyntaxError as e:
+                    print("usage: 'edit' <file_name>")
+                except ValueError as e:
+                    print(f"edit : failed to edit file {files[0]}")
             elif cmd == "rn":
                 pass
             elif cmd == "mv":
                 pass
             elif cmd == "show":
-                pass
+                try:
+                    if len(files) != 1:
+                        raise SyntaxError
+                    else:
+                        self.show_contents(files[0])
+                except SyntaxError as e:
+                    print("usage: 'show' <file_name>")
+                except ValueError as e:
+                    print(f"show: failed to show file {files[0]}")
+                except FileNotFoundError as e:
+                    print(f"show: {files[0]} does not exist")
             elif cmd == "whereis":
                 pass
             else:
@@ -107,14 +142,11 @@ class File_System:
     def create_dir(self, folder: str):
         # TODO : will not work for file paths ending in "/"
         if folder[0:5] == "/root":  # absolute path
-            curr = self.file_system
             folder_list = folder.split("/")
             new_folder = folder_list[-1]
             curr = self.traverse_node_list(folder_list[2:-1])
 
             self.valid_append(new_folder, curr)
-
-            # print(self.file_system)
 
         elif "/" in folder and folder[0] != "/":  # relative path
             folder_list = folder.split("/")
@@ -122,21 +154,19 @@ class File_System:
             curr = self.traverse_node_list(folder_list[:-1], self.pwd)
 
             self.valid_append(new_folder, curr)
-            # print("relative path")
-            # print(self.file_system)
 
         else:  # add folder in pwd
             self.valid_append(folder, self.pwd)
-            # print(self.file_system)
 
     def valid_append(self, new_folder, curr):
         try:
-
             if not curr.has_child(new_folder):
                 if isinstance(new_folder, str):
                     curr.append_child(Tree(Folder_Node(new_folder)))
                 elif isinstance(new_folder, Tree):
                     curr.append_child(new_folder)
+                # elif isinstance(new_folder, File_Node):
+                #     curr.append_child(Tree(new_folder))
             else:
                 raise NameError
         except NameError:
@@ -146,27 +176,22 @@ class File_System:
 
     def delete_dir(self, folder: str):
         if folder[0:5] == "/root":  # absolute path
-            curr = self.file_system
             folder_list = folder.split("/")
             curr = self.traverse_node_list(folder_list[2:])
 
             curr.parent.delete_child(curr.name.item)
-            # print("relative path")
-            # print(self.file_system)
+
 
         elif "/" in folder and folder[0] != "/":  # relative path
             folder_list = folder.split("/")
             curr = self.traverse_node_list(folder_list, self.pwd)
             curr.parent.delete_child(curr.name.item)
-            # print("relative path")
-            # print(self.file_system)
 
         else:  # delete folder in pwd
             if self.pwd.has_child(folder):
                 self.pwd.delete_child(folder)
             else:
                 raise ValueError
-            # print(self.file_system)
 
     def navigate_(self, folder: str):  # TODO : update self.pwd and self.abs_path
         if folder == "..":
@@ -226,11 +251,53 @@ class File_System:
                 self.pwd = self.pwd.find_descendant_by_name(folder)
                 self.abs_path.append(folder)
 
-    def create_file(self):
-        pass
+    def create_file(self, file_path):
 
-    def edit_file(self):
-        pass
+        file_name = ""
+
+        if file_path[0:5] == "/root":  # absolute path
+            folder_list = file_path.split("/")
+            file_name = folder_list[-1]
+            curr = self.traverse_node_list(folder_list[2:-1])
+            self.valid_append(file_name, curr)
+
+        elif "/" in file_path and file_path[0] != "/":  # relative path
+            folder_list = file_path.split("/")
+            file_name = folder_list[-1]
+            curr = self.traverse_node_list(folder_list[:-1], self.pwd)
+            self.valid_append(file_name, curr)
+
+        else:  # add folder in pwd
+            file_name = file_path
+            if self.pwd.has_child(file_name):
+                self.pwd.delete_child(file_name)
+
+            self.valid_append(file_name, self.pwd)
+
+        with open(file_name, "w") as f:
+            t = """#include <iostream>
+
+using namespace std;
+
+int main(){
+	cout<<"Hello World!\n"<<endl;
+	return 0;
+}
+"""
+            f.write(t)
+
+    def edit_file(
+        self, file_name
+    ):  # appends to the file; does not show contents of file
+        with open(file_name, "a") as f:
+            t = "//this is a test for the append using >>\n"
+            f.write(t)
+
+    def edit_(self, file_name):
+        # if does not exist, create file. If file exists, show the contents of the file and allow the file to be appended with additional texts
+        with open(file_name, "a") as f:
+            t = "//this is the result of editing the file using edit\n"
+            f.write(t)
 
     def delete_file(self):
         pass
@@ -250,7 +317,7 @@ class File_System:
         if file_[0:5] == "/root":  # absolute path
             file_list = file_.split("/")
             file = self.traverse_node_list(file_list[2:])
-            
+
         elif "/" in file_ and file_[0] != "/":  # relative path
             file_list = file_.split("/")
             file = self.traverse_node_list(file_list, self.pwd)
@@ -279,7 +346,6 @@ class File_System:
             copy.name.item = copy_
             self.valid_append(copy, self.pwd)
 
-
     def display_(self, folder: None):
         target = self.pwd.children
         if bool(folder):
@@ -303,8 +369,10 @@ class File_System:
             for f in target:
                 print(f.name.item)
 
-    def show_contents(self, file):
-        pass
+    def show_contents(self, file_name):
+        with open(file_name, "r") as f:
+            t = f.read()
+            print(t)
 
     def search_paths(self, file):
         pass
