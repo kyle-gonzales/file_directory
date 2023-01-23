@@ -15,11 +15,7 @@ class File_System:
         run = True
 
         while run:
-            print()
-            you = "You@YourPC"
-            inp = input(
-                f"{you} {self.print_pwd()}\n$ "
-            )  # TODO: format self.abs_path from list to string
+            inp = input()
 
             cmd, files = self.parse_input(inp)
 
