@@ -56,9 +56,7 @@ class File_System:
                 except SyntaxError as e:
                     print("usage: cd <directory name>")
                 except ValueError as e:
-                    print(
-                        f"cd: failed to change directory to {files[0]}: No such file or directory"
-                    )
+                    print(f"cd: {files[0]}: No such file or directory")
             elif cmd == "ls":
                 try:
                     if len(files) > 1:
@@ -88,7 +86,6 @@ class File_System:
 
             self.valid_append(new_folder, curr)
 
-
             # print(self.file_system)
 
         elif "/" in folder and folder[0] != "/":  # relative path
@@ -107,18 +104,17 @@ class File_System:
             self.valid_append(folder, self.pwd)
 
             # print(self.file_system)
-    
-    def valid_append(self, new_folder, curr):
-            try:
-                if not curr.has_child(new_folder):
-                    curr.append_child(Tree(Folder_Node(new_folder)))
-                else:
-                    raise NameError
-            except NameError:
-                print(f"mkdir: {new_folder}: Already exists")
-            finally:
-                return
 
+    def valid_append(self, new_folder, curr):
+        try:
+            if not curr.has_child(new_folder):
+                curr.append_child(Tree(Folder_Node(new_folder)))
+            else:
+                raise NameError
+        except NameError:
+            print(f"mkdir: {new_folder}: Already exists")
+        finally:
+            return
 
     def delete_dir(self, folder: str):
         if folder[0:5] == "/root":  # absolute path
@@ -169,7 +165,9 @@ class File_System:
             self.pwd = pwd_temp
             self.abs_path = new_path_temp[:]
 
-        elif "/" in folder and folder[0] != "/":
+        elif (
+            "/" in folder and folder[0] != "/"
+        ):  #! Bad output when appending to self.pwd
             folder_list = folder.split("/")
             pwd_temp = self.traverse_node_list(self.abs_path[1:])
             new_path_temp = self.abs_path[:]
@@ -212,7 +210,7 @@ class File_System:
     def copy_(self):
         pass
 
-    def display_(self, folder: None | str):
+    def display_(self, folder: None):
         target = self.pwd.children
         if bool(folder):
             if folder == "/":
