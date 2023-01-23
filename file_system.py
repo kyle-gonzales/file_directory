@@ -199,7 +199,7 @@ class File_System:
     def copy_(self):
         pass
 
-    def display_(self, folder: None | str):
+    def display_(self, folder: str):
         target = self.pwd.children
         if bool(folder):
             if folder == "/":
