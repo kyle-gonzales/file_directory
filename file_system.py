@@ -2,7 +2,7 @@ from tree_ import Tree
 from file_descriptor import File_Descriptor
 from node_ import File_Node, Folder_Node
 import re
-
+import copy as deepcopy
 
 class File_System:
     def __init__(self) -> None:
@@ -69,6 +69,34 @@ class File_System:
                     print(f"ls: error {files[0]}")
             elif cmd == "fs":
                 print(self.file_system)
+            elif cmd == "cp":
+                try:
+                    if len(files) != 2:
+                        raise SyntaxError
+                    else:
+                        self.copy_(files[0], files[1])
+                except SyntaxError as e:
+                    print("usage: cp source_file/source_directory target_file/target_directory")
+                except ValueError as e:
+                    print(
+                        f"cp: failed to move {files[0]} to {files[1]}"
+                    )
+            elif cmd == ">":
+                pass
+            elif cmd == ">>":
+                pass
+            elif cmd == "rm":
+                pass
+            elif cmd == "edit":
+                pass
+            elif cmd == "rn":
+                pass
+            elif cmd == "mv":
+                pass
+            elif cmd == "show":
+                pass
+            elif cmd == "whereis":
+                pass
             else:
                 print(f"{inp}: command not found")
                 continue
@@ -89,12 +117,9 @@ class File_System:
             # print(self.file_system)
 
         elif "/" in folder and folder[0] != "/":  # relative path
-            head = self.pwd
-
             folder_list = folder.split("/")
             new_folder = folder_list[-1]
-
-            curr = self.traverse_node_list(folder_list[:-1], head)
+            curr = self.traverse_node_list(folder_list[:-1], self.pwd)
 
             self.valid_append(new_folder, curr)
             # print("relative path")
@@ -102,13 +127,16 @@ class File_System:
 
         else:  # add folder in pwd
             self.valid_append(folder, self.pwd)
-
             # print(self.file_system)
 
     def valid_append(self, new_folder, curr):
         try:
+
             if not curr.has_child(new_folder):
-                curr.append_child(Tree(Folder_Node(new_folder)))
+                if isinstance(new_folder, str):
+                    curr.append_child(Tree(Folder_Node(new_folder)))
+                elif isinstance(new_folder, Tree):
+                    curr.append_child(new_folder)
             else:
                 raise NameError
         except NameError:
@@ -127,11 +155,8 @@ class File_System:
             # print(self.file_system)
 
         elif "/" in folder and folder[0] != "/":  # relative path
-            head = self.pwd
-
             folder_list = folder.split("/")
-
-            curr = self.traverse_node_list(folder_list, head)
+            curr = self.traverse_node_list(folder_list, self.pwd)
             curr.parent.delete_child(curr.name.item)
             # print("relative path")
             # print(self.file_system)
@@ -219,8 +244,41 @@ class File_System:
     def move_file(self, file, path):
         pass
 
-    def copy_(self):
-        pass
+    def copy_(self, file_, copy_):
+        file = None
+
+        if file_[0:5] == "/root":  # absolute path
+            file_list = file_.split("/")
+            file = self.traverse_node_list(file_list[2:])
+            
+        elif "/" in file_ and file_[0] != "/":  # relative path
+            file_list = file_.split("/")
+            file = self.traverse_node_list(file_list, self.pwd)
+        else:  # add folder in pwd
+            if self.pwd.has_child(file_):
+                file = self.pwd.find_descendant_by_name(file_)
+            else:
+                raise ValueError
+
+        if copy_[0:5] == "/root":  # absolute path
+            copy_list = copy_.split("/")
+            copy_path = self.traverse_node_list(copy_list[2:-1])
+            copy_name = copy_list[-1]
+            copy = deepcopy.deepcopy(file)
+            copy.name.item = copy_name
+            self.valid_append(copy, copy_path)
+        elif "/" in copy_ and copy_[0] != "/":  # relative path
+            copy_list = copy_.split("/")
+            copy_path = self.traverse_node_list(copy_list[:-1], self.pwd)
+            copy_name = copy_list[-1]
+            copy = deepcopy.deepcopy(file)
+            copy.name.item = copy_name
+            self.valid_append(copy, copy_path)
+        else:  # add folder in pwd
+            copy = deepcopy.deepcopy(file)
+            copy.name.item = copy_
+            self.valid_append(copy, self.pwd)
+
 
     def display_(self, folder: None):
         target = self.pwd.children
@@ -260,7 +318,7 @@ class File_System:
 
         cmd = inp_list[0]
         files = inp_list[1:]
-        # for index, f in enumerate(files):
+        # for index, f in enumerate(files): #!remove this
         #     f = f.replace(".", "\.")
         #     f = f.replace("*", ".*")
         #     f = f.replace("?", ".")
