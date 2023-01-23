@@ -1,11 +1,12 @@
 import re
 
-regex = '*.*'
+regex = '?cs*'
 regex = regex.replace(".", "\.")
 regex = regex.replace("*", ".*")
+regex = regex.replace("?", ".")
 print(regex)
 
 r = re.compile(regex)
 
-res = r.fullmatch("hello.hello.hello")
+res = r.fullmatch("cs123f")
 print(res.group(0) if res else "")

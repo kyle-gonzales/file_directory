@@ -1,6 +1,7 @@
 from node_ import *
 import re
 
+
 class Tree:
     def __init__(self, name: Node, parent: "Tree" = None) -> None:
 
@@ -78,20 +79,30 @@ class Tree:
         regex = re.compile(name)
         for child in self.children:
             match_ = regex.fullmatch(child.name.item)
-            if child.name.item == name: #? not using regex
+            if match_:
                 return child
             child.find_descendant_by_name(name)
         return None
 
-    def find_all_descendants_by_name(self, name): # TODO: support regex
+    def find_all_descendants_by_name(self, name_):  #* TODO: support regex FINISHED
         children = []
+        name = self.regex_to_wildcard(name_)
         regex = re.compile(name)
         for child in self.children:
             match_ = regex.fullmatch(child.name.item)
-            if child.name.item == name: #? not using regex
+            if match_:
                 children.append(child)
             child.find_all_descendants_by_name(name)
         return children
+
+    def regex_to_wildcard(self, name):
+        if name == "..":
+            return name
+        name = name.replace(".", "\.")
+        name = name.replace("*", ".*")
+        name = name.replace("?", ".")
+        return name
+
 
     # deprecated
     def __traverse(self, fun):  # input is a lambda

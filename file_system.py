@@ -147,9 +147,11 @@ class File_System:
         if folder == "..":
             self.pwd = self.get_parent(self.pwd)
             self.abs_path.pop()
+
         elif folder == "/":
             self.pwd = self.file_system
             self.abs_path = ["root"]
+
         elif folder[0:5] == "/root":
             folder_list = folder.split("/")
             pwd_temp = self.file_system
@@ -157,17 +159,21 @@ class File_System:
             for f in folder_list[2:]:
                 if f == "..":
                     pwd_temp = self.get_parent(pwd_temp)
+                    if len(new_path_temp) == 0:
+                        raise ValueError
+                    new_path_temp.pop()
                 else:
                     pwd_temp = pwd_temp.find_descendant_by_name(f)
-                if not pwd_temp:
-                    raise ValueError
-                new_path_temp.append(pwd_temp.name.item)
+
+                    if not pwd_temp:
+                        raise ValueError
+
+                    new_path_temp.append(pwd_temp.name.item)
+
             self.pwd = pwd_temp
             self.abs_path = new_path_temp[:]
 
-        elif (
-            "/" in folder and folder[0] != "/"
-        ):  #! Bad output when appending to self.pwd
+        elif "/" in folder and folder[0] != "/":
             folder_list = folder.split("/")
             pwd_temp = self.traverse_node_list(self.abs_path[1:])
             new_path_temp = self.abs_path[:]
@@ -175,11 +181,17 @@ class File_System:
             for f in folder_list:
                 if f == "..":
                     pwd_temp = self.get_parent(pwd_temp)
+                    if len(new_path_temp) == 0:
+                        raise ValueError
+                    new_path_temp.pop()
                 else:
                     pwd_temp = pwd_temp.find_descendant_by_name(f)
-                if not pwd_temp:
-                    raise ValueError
-                new_path_temp.append(pwd_temp.name.item)
+
+                    if not pwd_temp:
+                        raise ValueError
+
+                    new_path_temp.append(pwd_temp.name.item)
+
             self.pwd = pwd_temp
             self.abs_path = new_path_temp[:]
         else:
@@ -214,20 +226,24 @@ class File_System:
         target = self.pwd.children
         if bool(folder):
             if folder == "/":
-                target = self.file_system.children
+                target = [self.file_system.children]
             elif folder == "..":
-                target = self.pwd.parent.children
+                target = [self.pwd.parent.children]
             elif folder[0:5] == "/root":
                 folder_list = folder.split("/")
-                target = self.traverse_node_list(folder_list[2:]).children
+                target = self.find_all(folder_list[2:])
             elif "/" in folder:
                 folder_list = folder.split("/")
-                target = self.traverse_node_list(folder_list, self.pwd).children
+                target = self.find_all(folder_list, self.pwd)
             else:
-                target = self.traverse_node_list([folder], self.pwd).children
+                target = self.find_all([folder], self.pwd)
 
-        for f in target:
-            print(f.name.item)  # f.name prints folder_name/
+            for row in target:
+                for f in row:
+                    print(f.name.item)  # f.name prints folder_name/
+        else:
+            for f in target:
+                print(f.name.item)
 
     def show_contents(self, file):
         pass
@@ -245,8 +261,10 @@ class File_System:
         cmd = inp_list[0]
         files = inp_list[1:]
         # for index, f in enumerate(files):
-        #     files[index] = f.replace(".", "\.")
-        #     files[index] = f.replace("*", ".*")
+        #     f = f.replace(".", "\.")
+        #     f = f.replace("*", ".*")
+        #     f = f.replace("?", ".")
+        #     files[index] = f
 
         return (cmd, files)
 
@@ -271,6 +289,25 @@ class File_System:
                 raise ValueError
 
         return current
+
+    def find_all(self, node_list, head: Tree = None):
+        if not head:
+            head = self.file_system
+        current = head
+        nodes = []
+        for (
+            idx,
+            f,
+        ) in enumerate(node_list):
+            if idx == len(node_list) - 1:
+                nodes.append(current.find_all_descendants_by_name(f))
+                return nodes
+            if f == "..":
+                current = self.get_parent(current)
+            else:
+                current = current.find_descendant_by_name(f)
+
+        raise ValueError
 
     def get_parent(self, current: Tree):
         if not current.parent:
