@@ -8,6 +8,7 @@ ls
 mkdir sp
 mkdir cmsc/cmsc11
 ls
+fs
 mkdir cmsc/cmsc142
 ls
 cd cmsc11
@@ -19,6 +20,7 @@ cd ../movies
 ls
 cd ..
 cd cmsc/cmsc142
+fs
 ls
 cd ../../movies/horror
 ls
@@ -29,6 +31,7 @@ cd ..
 cd cmsc
 cd cmsc142
 cd /root/movies/horror
+fs
 cd ../..
 ls
 cp
@@ -39,6 +42,7 @@ cp movies movies1
 cp movies movies2
 cp movies movie1
 cp movies move1
+fs
 ls
 ls *s*
 ls *s*
@@ -53,6 +57,7 @@ cd cmsc
 ls
 cd cmsc11
 ls
+fs
 > hello.cpp
 show hello.cpp
 >> hello.cpp
@@ -67,15 +72,19 @@ cp hello.cpp two.cpp
 cp hello.cpp ../one.cpp
 cp hello.cpp one.cpp
 ls
+fs
 cd ..
 ls
 rn one.cpp newone.cpp
+fs
 ls
 cd ..
 ls
 mv cmsc comsci
+fs
 ls
 cd comsci
 ls
 cd ..
 cd cmsc
+fs

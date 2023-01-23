@@ -3,7 +3,7 @@ from file_descriptor import File_Descriptor
 from node_ import File_Node, Folder_Node
 import re
 import copy as deepcopy
-
+from text import text1, text2, count
 
 class File_System:
     def __init__(self) -> None:
@@ -14,147 +14,154 @@ class File_System:
     def start(self):
         run = True
 
-        while run:
-            inp = input()
+        file_name = input()
 
-            cmd, files = self.parse_input(inp)
+        with open(file_name, "r") as f:
+            for line in f:
+                inp = line
 
-            if cmd == "q":
-                run = False
-                break
-            if cmd == "mkdir":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError()
-                    else:
-                        self.create_dir(files[0])
-                except SyntaxError as e:
-                    print("usage: mkdir <directory name>")
-                except ValueError as e:
-                    print(f"mkdir: cannot create directory {files[0]}")
-            elif cmd == "rmdir":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError
-                    else:
-                        self.delete_dir(files[0])
-                except SyntaxError as e:
-                    print("usage: rmdir <directory name>")
-                except ValueError as e:
-                    print(
-                        f"rmdir: failed to remove {files[0]}: No such file or directory"
-                    )
-            elif cmd == "cd":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError
-                    else:
-                        self.navigate_(files[0])
-                except SyntaxError as e:
-                    print("usage: cd <directory name>")
-                except ValueError as e:
-                    print(f"cd: {files[0]}: No such file or directory")
-            elif cmd == "ls":
-                try:
-                    if len(files) > 1:
-                        raise SyntaxError
-                    else:
-                        self.display_(files[0] if len(files) else None)
-                except SyntaxError as e:
-                    print("usage: ls <directory name>")
-                except ValueError as e:
-                    print(f"ls: error {files[0]}")
-            elif cmd == "fs":
-                print(self.file_system)
-            elif cmd == "cp":
-                try:
-                    if len(files) != 2:
-                        raise SyntaxError
-                    else:
-                        self.copy_(files[0], files[1])
-                except SyntaxError as e:
-                    print(
-                        "usage: cp source_file/source_directory target_file/target_directory"
-                    )
-                except ValueError as e:
-                    print(f"cp: failed to move {files[0]} to {files[1]}")
-            elif cmd == ">":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError
-                    else:
-                        self.create_file(files[0])
-                except SyntaxError as e:
-                    print("usage: '>' <file_name>")
-                except ValueError as e:
-                    print(f">: failed to write to file {files[0]}")
-            elif cmd == ">>":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError
-                    else:
-                        self.edit_file(files[0])
-                except SyntaxError as e:
-                    print("usage: '>>' <file_name>")
-                except ValueError as e:
-                    print(f">: failed to append to file {files[0]}")
-            elif cmd == "rm":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError
-                    else:
-                        self.delete_dir(files[0])
-                except SyntaxError as e:
-                    print("usage: rm <file path>")
-                except ValueError as e:
-                    print(f"rm: failed to remove {files[0]}: No such file")
-            elif cmd == "edit":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError
-                    else:
-                        self.edit_(files[0])
-                except SyntaxError as e:
-                    print("usage: 'edit' <file_name>")
-                except ValueError as e:
-                    print(f"edit : failed to edit file {files[0]}")
-            elif cmd == "rn":
-                try:
-                    if len(files) != 2:
-                        raise SyntaxError
-                    else:
-                        self.rename_file(files[0], files[1])
-                except SyntaxError as e:
-                    print("usage: rn <filename> <new filename>")
-                except ValueError as e:
-                    print(f"rn: failed to rename {files[0]} to {files[1]}")
-            elif cmd == "mv":
-                try:
-                    if len(files) != 2:
-                        raise SyntaxError
-                    else:
-                        self.move_file(files[0], files[1])
-                except SyntaxError as e:
-                    print("usage: mv file_name target_file/target_directory")
-                except ValueError as e:
-                    print(f"mv: failed to move {files[0]} to {files[1]}")
-            elif cmd == "show":
-                try:
-                    if len(files) != 1:
-                        raise SyntaxError
-                    else:
-                        self.show_contents(files[0])
-                except SyntaxError as e:
-                    print("usage: 'show' <file_name>")
-                except ValueError as e:
-                    print(f"show: failed to show file {files[0]}")
-                except FileNotFoundError as e:
-                    print(f"show: {files[0]} does not exist")
-            elif cmd == "whereis":
-                pass
-            else:
-                print(f"{inp}: command not found")
-                continue
+                cmd, files = self.parse_input(inp)
+
+                if cmd == "q":
+                    run = False
+                    break
+                if cmd == "mkdir":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError()
+                        else:
+                            self.create_dir(files[0])
+                    except SyntaxError as e:
+                        print("usage: mkdir <directory name>")
+                    except ValueError as e:
+                        print(f"mkdir: cannot create directory {files[0]}")
+                elif cmd == "rmdir":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError
+                        else:
+                            self.delete_dir(files[0])
+                    except SyntaxError as e:
+                        print("usage: rmdir <directory name>")
+                    except ValueError as e:
+                        print(
+                            f"rmdir: failed to remove {files[0]}: No such file or directory"
+                        )
+                elif cmd == "cd":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError
+                        else:
+                            self.navigate_(files[0])
+                    except SyntaxError as e:
+                        print("usage: cd <directory name>")
+                    except ValueError as e:
+                        print(f"cd: {files[0]}: No such file or directory")
+                elif cmd == "ls":
+                    try:
+                        if len(files) > 1:
+                            raise SyntaxError
+                        else:
+                            self.display_(files[0] if len(files) else None)
+                    except SyntaxError as e:
+                        print("usage: ls <directory name>")
+                    except ValueError as e:
+                        print(f"ls: error {files[0]}")
+                elif cmd == "fs":
+                    print(self.file_system)
+                elif cmd == "cp":
+                    try:
+                        if len(files) != 2:
+                            raise SyntaxError
+                        else:
+                            self.copy_(files[0], files[1])
+                    except SyntaxError as e:
+                        print(
+                            "usage: cp source_file/source_directory target_file/target_directory"
+                        )
+                    except ValueError as e:
+                        print(f"cp: failed to move {files[0]} to {files[1]}")
+                elif cmd == ">":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError
+                        else:
+                            if count == 1:
+                                self.create_file(files[0], text1)
+                                count += 1
+                            else:
+                                self.create_file(files[0], text2)
+                    except SyntaxError as e:
+                        print("usage: '>' <file_name>")
+                    except ValueError as e:
+                        print(f">: failed to write to file {files[0]}")
+                elif cmd == ">>":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError
+                        else:
+                            self.edit_file(files[0])
+                    except SyntaxError as e:
+                        print("usage: '>>' <file_name>")
+                    except ValueError as e:
+                        print(f">: failed to append to file {files[0]}")
+                elif cmd == "rm":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError
+                        else:
+                            self.delete_dir(files[0])
+                    except SyntaxError as e:
+                        print("usage: rm <file path>")
+                    except ValueError as e:
+                        print(f"rm: failed to remove {files[0]}: No such file")
+                elif cmd == "edit":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError
+                        else:
+                            self.edit_(files[0])
+                    except SyntaxError as e:
+                        print("usage: 'edit' <file_name>")
+                    except ValueError as e:
+                        print(f"edit : failed to edit file {files[0]}")
+                elif cmd == "rn":
+                    try:
+                        if len(files) != 2:
+                            raise SyntaxError
+                        else:
+                            self.rename_file(files[0], files[1])
+                    except SyntaxError as e:
+                        print("usage: rn <filename> <new filename>")
+                    except ValueError as e:
+                        print(f"rn: failed to rename {files[0]} to {files[1]}")
+                elif cmd == "mv":
+                    try:
+                        if len(files) != 2:
+                            raise SyntaxError
+                        else:
+                            self.move_file(files[0], files[1])
+                    except SyntaxError as e:
+                        print("usage: mv file_name target_file/target_directory")
+                    except ValueError as e:
+                        print(f"mv: failed to move {files[0]} to {files[1]}")
+                elif cmd == "show":
+                    try:
+                        if len(files) != 1:
+                            raise SyntaxError
+                        else:
+                            self.show_contents(files[0])
+                    except SyntaxError as e:
+                        print("usage: 'show' <file_name>")
+                    except ValueError as e:
+                        print(f"show: failed to show file {files[0]}")
+                    except FileNotFoundError as e:
+                        print(f"show: {files[0]} does not exist")
+                elif cmd == "whereis":
+                    pass
+                else:
+                    print(f"{inp}: command not found")
+                    continue
 
     """ create a new directory
     """
@@ -270,7 +277,7 @@ class File_System:
                 self.pwd = self.pwd.find_descendant_by_name(folder)
                 self.abs_path.append(folder)
 
-    def create_file(self, file_path):
+    def create_file(self, file_path, text : str):
 
         file_name = ""
 
@@ -294,23 +301,14 @@ class File_System:
             self.valid_append(file_name, self.pwd)
 
         with open(file_name, "w") as f:
-            t = """#include <iostream>
-
-using namespace std;
-
-int main(){
-	cout<<"Hello World!\n"<<endl;
-	return 0;
-}
-"""
-            f.write(t)
+            f.write(text)
 
     def edit_file(
         self, file_name
     ):  # appends to the file; does not show contents of file
         if self.pwd.has_child(file_name):
             with open(file_name, "a") as f:
-                t = "//this is a test for the append using >>\n"
+                t = "//this is a test for the append using >>"
                 f.write(t)
         else:
             raise FileNotFoundError
@@ -334,7 +332,7 @@ int main(){
         try:
             file_name = file_node.name.item
             with open(file_name, "a") as f:
-                t = "//this is the result of editing the file using edit\n"
+                t = "//this is the result of editing the file using edit"
                 f.write(t)
         except Exception:
             raise FileNotFoundError
