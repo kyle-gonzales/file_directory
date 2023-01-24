@@ -19,7 +19,13 @@ class File_System:
         with open(file_name, "r") as f:
             for line in f:
                 inp = line
+        file_name = input()
 
+        with open(file_name, "r") as f:
+            for line in f:
+                inp = line
+
+                cmd, files = self.parse_input(inp)
                 cmd, files = self.parse_input(inp)
 
                 if cmd == "q":
@@ -332,6 +338,7 @@ class File_System:
         try:
             file_name = file_node.name.item
             with open(file_name, "a") as f:
+                t = "//this is the result of editing the file using edit"
                 t = "//this is the result of editing the file using edit"
                 f.write(t)
         except Exception:
