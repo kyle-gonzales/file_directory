@@ -1,16 +1,183 @@
-from tree_ import Tree
-from file_descriptor import File_Descriptor
-from node_ import File_Node, Folder_Node
 import re
+from dataclasses import dataclass, field
 import copy as deepcopy
-import text_
+
+""" Payload of Node. Contains the file information. Wrapped in Node
+"""
+class File_Descriptor:
+    def __init__(self, name) -> None:
+        self.name, self.extension = parse_file_name(name)
+
+    def __repr__(self) -> str:
+        return f"file_name = {self.name}\nextension = {self.extension}"
+
+    def __str__(self) -> str:
+        return f"{self.name}{self.extension if self.extension else ''}"
+
+def parse_file_name(name):
+    regex_file_name = r"^(.*?)(\.[^.]*)?$"  # folders will have an extension of None
+
+    m = re.match(regex_file_name, name)
+    # print(m.group(1,2))
+    return m.group(1, 2)
+
+
+""" Payload of Tree class. Template class for File_Node and Folder_Node
+"""
+@dataclass
+class Node:
+    item : any
+
+    def __str__(self):
+        return f"{self.item}"
+
+"""Payload of File_System. Specialization of Node. Wraps the File_Descriptor 
+"""
+class File_Node(Node):
+    def __init__(self, item : File_Descriptor) -> None:
+        return super().__init__(item)
+
+    def __repr__(self) -> str:
+        return repr(self.item)
+
+    def __str__(self) -> str:
+        return str(self.item)
+
+
+class Folder_Node(Node):
+    def __init__(self, item : File_Descriptor) -> None:
+        return super().__init__(item)
+
+    def __repr__(self) -> str:
+        return repr(self.item)
+
+    def __str__(self) -> str:
+        return f"{self.item}/"
+
+class Tree:
+    def __init__(self, name: Node, parent: "Tree" = None) -> None:
+
+        if not name or not str(name).strip():
+            raise NameError("Name must be a non-empty string")
+        else:
+            self.name = name
+        self.parent = parent
+        self.children: list[Tree] = []
+
+    """only searches within the root node's direct children
+    """
+
+    def has_child(self, needle):
+        # input can be a tree or string
+        if isinstance(needle, Tree):
+            return needle in self.children
+        for child in self.children:
+            if child.name.item == needle:
+                return True
+        return False
+
+    def insert_child(self, name: Node):  # deprecated
+        child = Tree(name, self)
+
+        self.children.append(child)
+
+        return child
+
+    def delete_child(self, needle):  # only a parent can remove its children
+        removedNode: Tree
+        if not self.has_child(needle):
+            return
+        if isinstance(needle, Tree):
+            removedNode = self.children.pop(self.children.index(needle))
+        else:
+            for child in self.children:
+                if child.name.item == needle:
+                    removedNode = self.children.pop(self.children.index(child))
+
+        if removedNode:
+            removedNode.parent = None
+
+        return removedNode
+
+    def append_child(self, child: "Tree"):
+        if not isinstance(child, Tree):
+            return
+
+        if child == self:  # avoid circular dependencies
+            raise Exception("Child cannot be the parent of itself")
+
+        parent = self.parent
+        while parent != None:  # avoid circular dependencies
+            if child == self:
+                raise Exception("Child cannot be the parent of its ancestors")
+            parent = parent.parent
+
+        child.parent = self
+        self.children.append(child)
+
+    def print_tree(self, tree: "Tree", space_count=0):
+        s = "\n"
+
+        for child in tree.children:
+            s += f"{' ' * space_count}|_{child.name}{self.print_tree(child, space_count = space_count + 2)}"
+
+        return s
+
+    """
+    uses depth-first search to look for a descendant within the root node
+    """
+
+    def find_descendant_by_name(self, name):
+        regex = re.compile(name)
+        for child in self.children:
+            match_ = regex.fullmatch(child.name.item)
+            if match_:
+                return child
+            child.find_descendant_by_name(name)
+        return None
+
+    def find_all_descendants_by_name(self, name_):  #* TODO: support regex FINISHED
+        children = []
+        name = self.regex_to_wildcard(name_)
+        regex = re.compile(name)
+        for child in self.children:
+            match_ = regex.fullmatch(child.name.item)
+            if match_:
+                children.append(child)
+            child.find_all_descendants_by_name(name)
+        return children
+
+    def regex_to_wildcard(self, name):
+        if name == "..":
+            return name
+        name = name.replace(".", "\.")
+        name = name.replace("*", ".*")
+        name = name.replace("?", ".")
+        return name
+
+
+    # deprecated
+    def __traverse(self, fun):  # input is a lambda
+        for child in self.children:
+            if fun(child):
+                return fun(child)
+            child.__traverse(fun)
+
+    def __str__(self) -> str:
+        s = str(self.name)
+        return s + self.print_tree(self, 2)
+
+
+
 class File_System:
+
     def __init__(self) -> None:
         self.file_system = Tree(Folder_Node("root"))
         self.abs_path = ["root"]
         self.pwd = self.file_system
 
     def start(self):
+        count_text = 1
         file_name = input()
 
         with open(file_name, "r") as f:
@@ -84,11 +251,28 @@ class File_System:
                         if len(files) != 1:
                             raise SyntaxError
                         else:
-                            if text_.count_text == 1:
-                                self.create_file(files[0], text_.text1)
-                                text_.count_text += 1
+                            text1 = """#include <iostream>
+
+using namespace std;
+
+int main(){
+        cout<<"Hello World!\\n"<<endl;
+        return 0;
+}"""
+
+                            text2 = """#include <iostream>
+
+using namespace std;
+
+int main(){
+        cout<<"Hello Philippines and hello world!\\n";
+        return 0;
+}"""
+                            if count_text == 1:
+                                self.create_file(files[0], text1)
+                                count_text += 1
                             else:
-                                self.create_file(files[0], text_.text2)
+                                self.create_file(files[0], text2)
                     except SyntaxError as e:
                         print("usage: '>' <file_name>")
                     except ValueError as e:
@@ -503,3 +687,14 @@ class File_System:
 
     def split_path(self):
         pass
+
+def main():
+
+
+    fs = File_System()
+    fs.start()
+
+
+if __name__ == "__main__":
+    main()
+

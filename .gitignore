@@ -4,5 +4,6 @@
 bugs.txt
 *.cpp
 test*.out
-tree.in
 tree.out
+testre.py
+check.py
