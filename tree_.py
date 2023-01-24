@@ -32,7 +32,7 @@ class Tree:
         return child
 
     def delete_child(self, needle):  # only a parent can remove its children
-        removedNode: Node
+        removedNode: Tree
         if not self.has_child(needle):
             return
         if isinstance(needle, Tree):

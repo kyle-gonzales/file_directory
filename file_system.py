@@ -3,8 +3,7 @@ from file_descriptor import File_Descriptor
 from node_ import File_Node, Folder_Node
 import re
 import copy as deepcopy
-from text import text1, text2, count
-
+import text_
 class File_System:
     def __init__(self) -> None:
         self.file_system = Tree(Folder_Node("root"))
@@ -12,13 +11,6 @@ class File_System:
         self.pwd = self.file_system
 
     def start(self):
-        run = True
-
-        file_name = input()
-
-        with open(file_name, "r") as f:
-            for line in f:
-                inp = line
         file_name = input()
 
         with open(file_name, "r") as f:
@@ -92,11 +84,11 @@ class File_System:
                         if len(files) != 1:
                             raise SyntaxError
                         else:
-                            if count == 1:
-                                self.create_file(files[0], text1)
-                                count += 1
+                            if text_.count_text == 1:
+                                self.create_file(files[0], text_.text1)
+                                text_.count_text += 1
                             else:
-                                self.create_file(files[0], text2)
+                                self.create_file(files[0], text_.text2)
                     except SyntaxError as e:
                         print("usage: '>' <file_name>")
                     except ValueError as e:
@@ -314,7 +306,7 @@ class File_System:
     ):  # appends to the file; does not show contents of file
         if self.pwd.has_child(file_name):
             with open(file_name, "a") as f:
-                t = "//this is a test for the append using >>"
+                t = "\n//this is a test for the append using >>"
                 f.write(t)
         else:
             raise FileNotFoundError
@@ -338,8 +330,7 @@ class File_System:
         try:
             file_name = file_node.name.item
             with open(file_name, "a") as f:
-                t = "//this is the result of editing the file using edit"
-                t = "//this is the result of editing the file using edit"
+                t = "\n//this is the result of editing the file using edit"
                 f.write(t)
         except Exception:
             raise FileNotFoundError
@@ -369,7 +360,10 @@ class File_System:
             path = self.traverse_node_list(path_list, self.pwd)
             path.append_child(file)
         else:
-            if self.pwd.has_child(path_):
+            if not self.pwd.has_child(path_):
+                file.name.item = path_
+                self.pwd.append_child(file)
+            else:
                 path = self.pwd.find_descendant_by_name(path_)
                 path.append_child(file)
 
@@ -393,6 +387,8 @@ class File_System:
             copy_list = copy_.split("/")
             copy_path = self.traverse_node_list(copy_list[2:-1])
             copy_name = copy_list[-1]
+            if copy_path.has_child(copy_name):
+                return
             copy = deepcopy.deepcopy(file)
             copy.name.item = copy_name
             self.valid_append(copy, copy_path)
@@ -400,10 +396,14 @@ class File_System:
             copy_list = copy_.split("/")
             copy_path = self.traverse_node_list(copy_list[:-1], self.pwd)
             copy_name = copy_list[-1]
+            if copy_path.has_child(copy_name):
+                return
             copy = deepcopy.deepcopy(file)
             copy.name.item = copy_name
             self.valid_append(copy, copy_path)
         else:  # add folder in pwd
+            if self.pwd.has_child(copy_):
+                return
             copy = deepcopy.deepcopy(file)
             copy.name.item = copy_
             self.valid_append(copy, self.pwd)

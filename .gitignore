@@ -3,6 +3,6 @@
 
 bugs.txt
 *.cpp
-test.out
+test*.out
 tree.in
 tree.out
